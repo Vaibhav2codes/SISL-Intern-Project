@@ -14,6 +14,8 @@ import * as PANOLENS from 'panolens';
 function MapWithPanorama() {
   const mapRef = useRef();
   const panoramaRef = useRef();
+  const viewerRef = useRef();
+
 
   useEffect(() => {
     const map = new Map({
@@ -47,7 +49,6 @@ function MapWithPanorama() {
             heading,
           ] = coordinate.split(' ');
 
-        //   const imageAddress = file_name.replace(/^"(.*)"$/, '$1');
 
           const feature = new Feature({
             geometry: new Point(fromLonLat([+longitude, +latitude])),
@@ -74,24 +75,32 @@ function MapWithPanorama() {
     });
     map.addInteraction(select);
 
+     viewerRef.current = new PANOLENS.Viewer({
+      container: panoramaRef.current,
+    });
+
     select.on('select', (event) => {
       if (event.selected.length > 0) {
         const properties = event.selected[0].getProperties().properties;
-        var imageAddress = properties.imageAddress.replace(/"/g, '');
+        var imageAddress =properties.imageAddress.replace(/"/g, '');
 
         // var imageAddress = properties.imageAddress;
         console.log("Image Address:", imageAddress);
         const panorama = new PANOLENS.ImagePanorama(imageAddress);
-        const viewer = new PANOLENS.Viewer({
-          container: panoramaRef.current,
-        });
+         viewerRef.current.setPanorama(panorama);
+        // const viewer = new PANOLENS.Viewer({
+        //   container: panoramaRef.current,
+        // });
         
-        viewer.setPanorama(panorama);
+        // viewer.setPanorama(panorama);
+       
         console.log('panoramaRef:', panoramaRef.current);
         console.log(panorama);
-        console.log(viewer)
+        // console.log(viewer)
       }
     });
+
+    
 
     return () => {
       map.setTarget(undefined);
@@ -100,10 +109,11 @@ function MapWithPanorama() {
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
-      <div ref={mapRef} style={{ flex: 1 }}></div>
-      <div ref={panoramaRef} style={{ flex: 1 }}></div>
+      <div ref={mapRef} style={{ flex: 1, zIndex: 0 }}></div>
+      <div ref={panoramaRef} style={{ flex: 1, zIndex: 1 }}></div>
     </div>
   );
 }
+
 
 export default MapWithPanorama;
